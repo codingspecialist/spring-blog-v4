@@ -31,6 +31,55 @@
         let root = document.querySelector("#root");
         renderList();
 
+       // list 디자인
+       function renderList() {
+            clear();
+            let dom = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>제목</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-box">
+                        
+                    </tbody>
+                </table>
+            `;
+            root.innerHTML = dom;     
+            sendList();   
+        }
+
+
+        function renderListItem(board) {
+            let dom = `
+                    <td>${board.id}</td>
+                    <td>${board.title}</td>
+                    <td><a href="javascript:void(0);" onclick="renderDetail(${board.id})">상세보기</a></td>
+            `;
+            let item = document.createElement("tr");
+            item.innerHTML = dom;
+            return item;
+        }
+
+        async function sendList() {
+            // 1. API 요청
+            let response = await fetch("http://localhost:8080/api");
+            let responseBody = await response.json();
+
+            // 2. 응답 처리
+            let boards = responseBody.body;
+
+            let listBox = document.querySelector("#list-box");
+            boards.forEach(board => {
+                let item = renderListItem(board);
+                listBox.append(item);
+            });
+        }
+
+
         // 1. saveForm 디자인
         function renderSaveForm() {
             clear();
@@ -54,15 +103,7 @@
             // 4. 응답 처리
         }
 
-        function sendList() {
-            // 1. 사용자 입력값 받기
-
-            // 2. JSON 변환
-
-            // 3. API 요청
-
-            // 4. 응답 처리
-        }
+        
 
         function sendDelete() {
             // 1. 사용자 입력값 받기
@@ -84,40 +125,6 @@
             // 4. 응답 처리
         }
 
-        // list 디자인
-        function renderList() {
-            clear();
-            let dom = `
-                <table border="1">
-                    <thead>
-                        <tr>
-                            <th>번호</th>
-                            <th>제목</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="list-box">
-                        
-                    </tbody>
-                </table>
-                <button onclick="renderDetail()">상세보기테스트</button>
-            `;
-            root.innerHTML = dom;     
-            sendList();   
-        }
-
-
-        function renderListItem() {
-            let dom = `
-            <tr>
-                <td>1</td>
-                <td>제목1</td>
-                <td><a href="javascript:void(0);" onclick="renderDetail()">상세보기</a></td>
-            </tr>
-        `;
-            return dom;
-        }
-
         // updateForm 디자인
         function renderUpdateForm() {
             clear();
@@ -133,21 +140,32 @@
             root.innerHTML = dom;
         }
 
+        async function sendDetail(id) {
+            let response = await fetch(`http://localhost:8080/api/board/${id}`);
+            let responseBody = await response.json();
+            console.log(responseBody);
+
+            let body = responseBody.body;
+            return body;
+        }
+
         // detail 디자인
-        function renderDetail() {
+        async function renderDetail(id) {
             clear();
+
+            let board = await sendDetail(id);
             let dom = `
                 <form>
-                    <button type="button" onclick="sendDelete()">삭제</button>
+                    <button type="button" onclick="sendDelete(${board.id})">삭제</button>
                 </form>
                 <form>
-                    <button type="button" onclick="renderUpdateForm()">수정</button>
+                    <button type="button" onclick="renderUpdateForm(${board.id})">수정</button>
                 </form>
                 <div>
-                    번호 : 1 <br>
-                    제목 : 제목1 <br>
-                    내용 : 내용1 <br>
-                    작성일 : 2024.11.22 <br>
+                    번호 : ${board.id} <br>
+                    제목 : ${board.title} <br>
+                    내용 : ${board.content} <br>
+                    작성일 : ${board.createdAt} <br>
                 </div>
             `;
             root.innerHTML = dom;
